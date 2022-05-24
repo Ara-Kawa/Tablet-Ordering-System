@@ -1,0 +1,101 @@
+﻿@page "/"
+@using tablet_blazor.Services
+@inject IUserLogin userlogin
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage session
+@inject NavigationManager NavigationManager
+<div class="row" id="login_card">
+    <div class="col-sm-2  text-center">
+
+    </div>
+
+
+    <div class="col-sm-8 " style="background-color:#f1f1f1; border: solid 1px black;align-items:center; padding:0; align-self:center; height:80%;">
+
+        <table class="table" style="height:100%;">
+            <tr>
+                <td style="width:100%; text-align:center; vertical-align:middle; font-size:2rem;">
+                    <input runat="server" id="users1" list="users" name="browser" autocomplete="off" @bind="uname" placeholder="User Name" style="width:100%; text-align:center;  height:80%;" />
+                    <datalist runat="server" id="users">
+                        @foreach (var userName in users)
+                        {
+                            <option value="@userName"></option>
+                        }
+                    </datalist>
+                </td>
+
+            </tr>
+
+            <tr>
+                <td style="width:100%;; text-align:center; vertical-align:middle; font-size:2rem;"> <input id="password" @bind="pass" onblur="validate(this)" runat="server" type="password" placeholder="password" style="width:100%;  text-align:center; height:80%;" /></td>
+
+            </tr>
+
+            <tr>
+                <td style="width:100%; text-align:center; vertical-align:middle; font-size:2rem;"><input id="btnSubmit" type="submit" value="Login" runat="server" @onclick="login" style="width:100%;  height:80%; background: darkseagreen;" /></td>
+
+            </tr>
+
+        </table>
+
+
+
+
+
+
+
+
+
+
+
+
+        <p id="error" runat="server">@ErrorMessage</p>
+
+
+
+
+    </div>
+
+
+
+    <div class="col-sm-2  text-center"></div>
+</div>
+
+
+
+@code {
+    List<string> users = new List<string>();
+    string uname, pass;
+    string ErrorMessage = "";
+    protected override async Task OnInitializedAsync()
+    {
+        users =   (await userlogin.GetUsers()).ToList();
+    }
+
+    async Task login()
+    {
+        try{
+            if (uname == null || pass == null || uname.Trim().Length == 0 || pass.Trim().Length == 0)
+            {
+                return;
+            }
+
+            var result = await userlogin.Login(new Models.User() { uname = uname, pass = pass });
+            if (result == null)
+            {
+                ErrorMessage = "Invalid UserName or Password";
+            }
+            else
+            {
+                await session.SetAsync("ID", result.uid);
+                await session.SetAsync("PER", result.per);
+
+                NavigationManager.NavigateTo("tables");
+
+            }
+        }
+        catch (Exception Ex){ }
+
+        }
+
+}

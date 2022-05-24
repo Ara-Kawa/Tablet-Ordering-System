@@ -1,0 +1,386 @@
+﻿@page "/orders"
+
+@using tablet_blazor.Services
+@using tablet_blazor.Models
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject NavigationManager NavigationManager
+@inject IOrdersService OrderService
+
+@inject ProtectedSessionStorage session
+
+
+
+<div class="row" id="header" style="height:10vh;">
+    <div id="header1" class="col-12">
+        <div class="row">
+            <div class="col-5">
+                <input runat="server" @onclick="BackClick" id="btn_back" type="button" name="btn_back" value="Back" class="btn btn-danger" />
+                <input id="Button1" type="button" name="btn_back" class="btn btn-success" disabled="disabled" @bind="table_number" />
+                <input @bind="change_table_number" style="height:100%; width:50px; text-align:center" />
+                <button type="button" data-toggle="modal" data-target="#exampleModalCenter" class="btn btn-danger" Style=" height:100%; width:75px">Change</button>
+
+
+
+            </div>
+            <div class="col-3 text-center">
+                <h2 runat="server" id="lbl_person" class="label" name="btn_back">@person_id</h2>
+            </div>
+            <div class="col-4 text-center">
+                <input runat="server" @onclick="PrintHelp" id="btn_help" type="button" name="btn_help" value="Help" class="btn btn-warning" />
+                <input runat="server" @onclick="PrintTotal" id="btn_total" type="button" name="btn_total" value="Total" class="btn btn-warning" />
+                <input runat="server" style="padding:0; font-size:14px;" @onclick="PrintOrder" id="btn_order" type="button" name="btn_order" value="Print Order" class="btn btn-warning" />
+            </div>
+        </div>
+
+        <div class="row person">
+            <div class="col-12 text-center">
+
+                <input runat="server" @onclick="@(() => SetPerson("A"))" class="btn btn-secondary" type="button" name="btn_back" value="A">
+                <input runat="server" @onclick="@(() => SetPerson("B"))" class="btn btn-secondary" type="button" name="btn_back" value="B">
+                <input runat="server" @onclick="@(() => SetPerson("C"))" class="btn btn-secondary" type="button" name="btn_back" value="C">
+                <input runat="server" @onclick="@(() => SetPerson("D"))" class="btn btn-secondary" type="button" name="btn_back" value="D">
+                <input runat="server" @onclick="@(() => SetPerson("E"))" class="btn btn-secondary" type="button" name="btn_back" value="E">
+                <input runat="server" @onclick="@(() => SetPerson("F"))" class="btn btn-secondary" type="button" name="btn_back" value="F">
+                <input runat="server" @onclick="@(() => SetPerson("G"))" class="btn btn-secondary" type="button" name="btn_back" value="G">
+                <input runat="server" @onclick="@(() => SetPerson("H"))" class="btn btn-secondary" type="button" name="btn_back" value="H">
+                <input runat="server" @onclick="@(() => SetPerson("I"))" class="btn btn-secondary" type="button" name="btn_back" value="I">
+                <input runat="server" @onclick="@(() => SetPerson("J"))" class="btn btn-secondary" type="button" name="btn_back" value="J">
+                <input runat="server" @onclick="@(() => SetPerson("K"))" class="btn btn-secondary" type="button" name="btn_back" value="K">
+                <input runat="server" @onclick="@(() => SetPerson("L"))" class="btn btn-secondary" type="button" name="btn_back" value="L">
+                <input runat="server" @onclick="@(() => SetPerson("M"))" class="btn btn-secondary" type="button" name="btn_back" value="M">
+                <input runat="server" @onclick="@(() => SetPerson("N"))" class="btn btn-secondary" type="button" name="btn_back" value="N">
+                <input runat="server" @onclick="@(() => SetPerson("O"))" class="btn btn-secondary" type="button" name="btn_back" value="O">
+                <input runat="server" @onclick="@(() => SetPerson("P"))" class="btn btn-secondary" type="button" name="btn_back" value="P">
+
+
+
+            </div>
+        </div>
+
+
+
+
+
+    </div>
+</div>
+
+
+<div class="menu row ">
+    <div id="menu1" class="menus col-5" onscroll="SetDivPosition('menus')">
+        @code
+            {int i = 0;}
+
+        @foreach (var Menu in menus)
+        {
+
+            <input type="button" runat="server" id="@i" class="btn_menu btn btn-primary" value="@Menu" @onclick="()=>GetItems(Menu)">
+            i++;
+        }
+
+
+
+    </div>
+
+
+
+
+
+    <div id="menu_item" class="items col-7" onscroll="SetDivPosition('items')">
+        @if (items.Count != 0)
+        {
+            @foreach (var item in items)
+            {
+                <input type="button" runat="server" id="@item.id" value="@item.name" class="btn_item btn btn-info" @onclick="()=>click_item(item)">
+            }
+        }
+
+
+    </div>
+
+</div>
+
+
+
+
+
+<div class="row" id="save" style="background-color:#fffaa4; margin-top:10px; margin-bottom:10px; height:5vh">
+
+    <div id="save1" class="col-sm-3 text-center">
+        <input runat="server" id="txt_item_name" type="text" @bind="item_name" name="txt_item_name" class="form-control" placeholder="Item Name" style="margin-left:7px; height:50px; font-size:30px" />
+        <input runat="server" id="item_tag" type="hidden" @bind="item_id" />
+    </div>
+
+    <div class="col-sm-4">
+        <input runat="server" @bind="item_note" id="notes1" list="notes" name="txt_note" autocomplete="off" class="form-control" placeholder="Item Note" style="margin-left:7px; height:50px; font-size:30px" />
+        <datalist runat="server" id="notes"></datalist>
+    </div>
+
+
+
+    <div class="col-sm-3 text-center" style="background-color:#fffaa4">
+        <div class="row" style="align-items:center;">
+
+            <div class="col-sm-4" style="margin: 0; padding: 0;">
+                <input @onclick="decrement" type="button" name="tbn_decrement" style="width:90%; height:50px; font-size:30px; margin:0; padding:0;" value="-" class="btn btn-info " />
+            </div>
+
+            <div class="col-sm-4" style="margin: 0; padding: 0;">
+                <input runat="server" @bind="item_qty" onserverchange="txt_qty_ServerChange" id="txt_qty" type="text" name="txt_item_name" style="width:100%; text-align:center; height:50px; font-size:30px; margin:0; padding:0;" />
+            </div>
+
+            <div class="col-sm-4" style="margin: 0; padding: 0;">
+                <input @onclick="increment" type="button" name="tbn_increment" value="+" class="btn btn-info" style="width:90%;  height:50px;  font-size:30px; margin:0; padding:0;" />
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+
+    <div class="col-sm-2 text-center">
+        <button ID="btn_Save" class="btn btn-warning" style="color: white;background-color: green; width: 100%;border-color: green;  height:50px;" @onclick="SaveItem">Save</button>
+    </div>
+
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="parent row" style="height:35vh; overflow-y:scroll">
+    <div id="parent1" class="col-12">
+        <table style="height:10px">
+            <thead>
+                <tr>
+                    <th style="font-size:13px" scope="col">Add Note</th>
+                    <th style="font-size:13px" scope="col">Change Qty</th>
+                    <th style="font-size:13px" scope="col">Item Name</th>
+                    <th style="font-size:13px" scope="col">Qty</th>
+                    <th style="font-size:13px" scope="col">Insert By</th>
+                    <th style="font-size:13px" scope="col">Note</th>
+                    <th style="font-size:13px" scope="col">O</th>
+                    <th style="font-size:13px" scope="col">P</th>
+                    <th style="font-size:13px" scope="col">#</th>
+                    <th style="font-size:13px" scope="col">Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @if (table.Count != 0)
+                {
+                    @foreach (var item in table)
+                    {
+                        <tr>
+                            <td><button style="font-size:13px; padding:0; height:100%; width:100%" class="btn btn-success" @onclick="()=> AddNote(item.rid)">Add Note</button></td>
+                            <td><button style="font-size:13px; padding:0;height:100%; width:100%" class="btn btn-secondary" @onclick="()=>AddQty(item.rid)">Change Qty</button></td>
+                            <td>@item.name</td>
+                            <td>@item.qty</td>
+                            <td>@item.uname</td>
+                            <td>@item.note</td>
+                            <td><input type="checkbox" @bind="@item.O" /></td>
+                            <td><input type="checkbox" @bind="@item.P" /></td>
+                            <td>@item.person_id</td>
+                            <td><button style="height: 100%; width: 100%" @onclick="()=>DeleteItem(item.rid, item.uname)" class="btn btn-danger">Delete</button></td>
+                        </tr>
+                    }
+                }
+
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Change Table</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Do You Want to Change The Table?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button @onclick="ChangeTable" data-dismiss="modal" type="button" class="btn btn-primary">Change Table</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    List<string> menus = new List<string>();
+    List<Item> items = new List<Item>();
+    string item_name = "";
+    string item_id = "";
+    int item_qty = 0;
+    string item_note = "";
+    string prev_item = "";
+    string person_id = "A";
+    string table_number = "Table No: ";
+
+    string change_table_number = "";
+    List<Item> table = new List<Item>();
+    protected override async Task OnInitializedAsync()
+    {
+        try
+
+        {
+            var res = await session.GetAsync<int>("ID");
+            if (!res.Success)
+            {
+                NavigationManager.NavigateTo("/");
+            }
+        }
+        catch (Exception ex) { NavigationManager.NavigateTo("/"); }
+        table_number += (await session.GetAsync<string>("tbl_number")).Value;
+
+
+        menus = await OrderService.GetMenus();
+        table = await OrderService.GetTable((await session.GetAsync<string>("tbl_number")).Value);
+
+
+    }
+
+    async Task GetItems(string item)
+    {
+
+        items = await OrderService.GetItems(item);
+    }
+
+    void click_item(Item item)
+    {
+        if (prev_item == item.name)
+        {
+            item_qty += 1;
+        }
+        else { item_qty = 1; }
+        prev_item = item.name;
+
+
+        item_name = item.name;
+        item_id = item.id.ToString();
+
+    }
+    void SetPerson(string s)
+    {
+        person_id = s;
+    }
+    async Task SaveItem()
+
+    {
+        try
+        {
+            var uid = Convert.ToInt32((await session.GetAsync<int>("ID")).Value);
+            var tbl_number1 = (await session.GetAsync<string>("tbl_number")).Value;
+            await OrderService.SaveItem(new Item() { id = Convert.ToInt32(item_id), name = item_name, qty = item_qty, note = item_note, uid =
+                uid, table_number = tbl_number1, person_id = person_id });
+            item_name = "";
+            item_qty = 0;
+            item_note = "";
+            item_id = "";
+            table = await OrderService.GetTable((await session.GetAsync<string>("tbl_number")).Value);
+
+
+        }
+        catch (Exception ex) { }
+    }
+    void BackClick()
+    {
+        NavigationManager.NavigateTo("/tables");
+    }
+
+    async Task AddNote(long rid)
+    {
+
+
+        await OrderService.AddNote(rid, item_note);
+
+        table = await OrderService.GetTable((await session.GetAsync<string>("tbl_number")).Value);
+        item_name = "";
+        item_qty = 0;
+        item_note = "";
+        item_id = "";
+    }
+    async Task AddQty(long rid)
+    {
+
+        await OrderService.AddQty(rid, Convert.ToDecimal(item_qty));
+        table = await OrderService.GetTable((await session.GetAsync<string>("tbl_number")).Value);
+        item_name = "";
+        item_qty = 0;
+        item_note = "";
+        item_id = "";
+    }
+    void increment()
+    {
+        item_qty++;
+
+    }
+    void decrement()
+    {
+        item_qty--;
+
+
+
+    }
+    async Task DeleteItem(long rid, string uname)
+    {
+        await OrderService.DeleteRecord(new Item() { rid = rid, table_number = (await session.GetAsync<string>("tbl_number")).Value, uname = uname, uid = (await session.GetAsync<int>("ID")).Value });
+        table = await OrderService.GetTable((await session.GetAsync<string>("tbl_number")).Value);
+    }
+    async Task PrintTotal()
+    {
+        await OrderService.PrintTotal(new Item() { table_number = (await session.GetAsync<string>("tbl_number")).Value });
+        table = await OrderService.GetTable((await session.GetAsync<string>("tbl_number")).Value);
+    }
+    async Task PrintHelp()
+    {
+        await OrderService.Printhelp(new Item() { note = item_note, table_number = (await session.GetAsync<string>("tbl_number")).Value });
+        table = await OrderService.GetTable((await session.GetAsync<string>("tbl_number")).Value);
+    }
+
+    async Task PrintOrder()
+    {
+
+        await OrderService.PrintOrder(new Item() { table_number = (await session.GetAsync<string>("tbl_number")).Value });
+        table = await OrderService.GetTable((await session.GetAsync<string>("tbl_number")).Value);
+
+    }
+
+    async Task ChangeTable()
+    {
+        if (Convert.ToInt16(change_table_number) > 99 || Convert.ToInt16(change_table_number) < 1) { change_table_number = ""; return; }
+        await OrderService.ChangeTable((await session.GetAsync<string>("tbl_number")).Value, change_table_number);
+        NavigationManager.NavigateTo("/tables");
+    }
+
+
+}

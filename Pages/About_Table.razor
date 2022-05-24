@@ -1,0 +1,97 @@
+﻿@page "/about_table"
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using tablet_blazor.Models
+@inject NavigationManager NavigationManager
+@inject ProtectedSessionStorage session
+@inject tablet_blazor.Services.IAbout_Table_Service About_Table_service
+
+<div class="row header">
+    <div class="col-sm-2  text-center" style="align-self:center;">
+        <input runat="server" @onclick="Back" id="btn_back" type="button" name="btn_back" value="Back" class="btn btn-danger" />
+    </div>
+    <div class="col-sm-8  text-center" style="align-self:center;">
+        <h1>Table Status</h1>
+    </div>
+    <div class="col-sm-2  text-center">
+    </div>
+</div>
+
+
+
+
+<div class="row table">
+    <div class="col-sm-2  text-center">
+
+    </div>
+
+
+    <div class="col-sm-8 " style="background-color:#f1f1f1; border: solid 1px black;align-items:center; padding:0; font-size:1.3rem; height:90vh; overflow-y:scroll;">
+        <table class="table" style="text-align:center;">
+            <thead>
+                <tr>
+                    <th style="font-size:13px; width:33.33%" scope="col">Table Number</th>
+                    <th style="font-size:13px; width:33.33%" scope="col">Order</th>
+                    <th style="font-size:13px; width:33.33%" scope="col">Bill</th>
+
+                </tr>
+            </thead>
+            <tbody>
+
+                @if (  tables != null && tables.Count != 0)
+                {
+                    @foreach (var table in tables)
+                    {
+                        <tr>
+                           
+                            <td>@table.table_number</td>
+                            <td>@table.have_order</td>
+                            <td>@table.have_bill</td>
+                           
+                        </tr>
+                    }
+                }
+
+
+            </tbody>
+        </table>
+       
+    </div>
+
+
+
+    <div class="col-sm-2  text-center"></div>
+</div>
+
+<div class="row footer"></div>
+
+@code { 
+
+    List<Table> tables = new List<Table>();
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+
+        {
+            var res = await session.GetAsync<int>("ID");
+            if (!res.Success)
+            {
+                NavigationManager.NavigateTo("/");
+            }
+
+            tables = await About_Table_service.getTables();
+        }
+        catch (Exception ex) { NavigationManager.NavigateTo("/"); }
+
+
+
+
+
+    }
+    void Back() {
+        NavigationManager.NavigateTo("/tables");
+    }
+
+}
